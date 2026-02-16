@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 const CoinByIdData = () => {
@@ -11,10 +11,6 @@ const CoinByIdData = () => {
       .then((response) => response.json())
       .catch((err) => console.error(err));
   }, [id]);
-
-  function increment() {
-    // TODO: implement
-  }
 
   return (
     <>
