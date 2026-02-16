@@ -23,8 +23,22 @@ const Login = () => {
   async function handleSubmit(event) {
     event.preventDefault();
     try {
-      const backendURL = process.env.REACT_APP_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
-      const data = await fetch(`${backendURL}/api/v1/login`, {
+      let backendURL = process.env.REACT_APP_BACKEND_URL;
+      
+      // If no backend URL is set, use relative path for production
+      if (!backendURL) {
+        backendURL = '';
+      }
+      
+      // Remove trailing slash if present
+      if (backendURL.endsWith('/')) {
+        backendURL = backendURL.slice(0, -1);
+      }
+      
+      const apiUrl = `${backendURL}/api/v1/login`;
+      console.log('Login API URL:', apiUrl);
+      
+      const data = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

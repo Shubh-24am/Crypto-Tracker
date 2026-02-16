@@ -8,29 +8,39 @@ dotenv.config();
 
 const app = express();
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (origin === "http://localhost:3000" || origin === "http://127.0.0.1:3000") {
-        return callback(null, true);
-      }
-      if (/^http:\/\/192\.168\..*:3000$/.test(origin)) {
-        return callback(null, true);
-      }
-      if (origin && origin.includes("vercel.app")) {
-        return callback(null, true);
-      }
-      if (origin && origin.startsWith("https://")) {
-        return callback(null, true);
-      }
-      return callback(new Error("CORS not allowed"));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// CORS middleware - MUST be first
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Allow specific origins
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ];
+  
+  // Allow all vercel.app domains
+  if (origin && origin.includes("vercel.app")) {
+    allowedOrigins.push(origin);
+  }
+  
+  // Allow HTTPS in production
+  if (origin && origin.startsWith("https://")) {
+    allowedOrigins.push(origin);
+  }
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
