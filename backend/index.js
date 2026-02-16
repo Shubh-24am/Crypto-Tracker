@@ -9,16 +9,36 @@ dotenv.config();
 const app = express();
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like curl requests or Postman)
       if (!origin) return callback(null, true);
-      const isLocalhost = origin === "http://localhost:3000" || origin === "http://127.0.0.1:3000";
-      const isLan = /^http:\/\/192\.168\..*:3000$/.test(origin);
-      const isVercel = origin && origin.includes("vercel.app");
-      const isProduction = origin && (origin.includes("https://") || isVercel);
-      if (isLocalhost || isLan || isProduction) return callback(null, true);
-      return callback(new Error("Not allowed by CORS"));
+      
+      // Allow localhost
+      if (origin === "http://localhost:3000" || origin === "http://127.0.0.1:3000") {
+        return callback(null, true);
+      }
+      
+      // Allow LAN access
+      if (/^http:\/\/192\.168\..*:3000$/.test(origin)) {
+        return callback(null, true);
+      }
+      
+      // Allow all Vercel deployments
+      if (origin.includes("vercel.app")) {
+        return callback(null, true);
+      }
+      
+      // Allow any HTTPS requests (for production)
+      if (origin.startsWith("https://")) {
+        return callback(null, true);
+      }
+      
+      // Block all other origins
+      return callback(new Error("CORS not allowed"));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
