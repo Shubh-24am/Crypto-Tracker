@@ -8,33 +8,38 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration - Allow all origins for Vercel deployment
-const corsOptions = {
-  origin: true, // Allow any origin
-  credentials: true,
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  optionsSuccessStatus: 200,
-  preflightContinue: false
-};
+// Manual CORS headers - applies to ALL responses
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Set CORS headers for all requests
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.setHeader("Access-Control-Max-Age", "3600");
+  
+  // Handle preflight OPTIONS requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  
+  next();
+});
 
-app.use(cors(corsOptions));
-
-// Handle preflight requests explicitly
-app.options("*", cors(corsOptions));
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Connect to MongoDB
 connectDB();
 
 // Health check route
 app.get("/api/test", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
   res.status(200).json({ message: "Backend is running and MongoDB connected" });
 });
 
 app.get("/", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
   res.status(200).json({ status: "Server is running" });
 });
 
@@ -44,6 +49,7 @@ app.use("/api", routes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error("Error:", err);
+  res.setHeader("Content-Type", "application/json");
   res.status(500).json({ 
     status: false, 
     message: err.message || "Internal server error",
@@ -53,6 +59,7 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use((req, res) => {
+  res.setHeader("Content-Type", "application/json");
   res.status(404).json({ status: false, message: "Route not found" });
 });
 
