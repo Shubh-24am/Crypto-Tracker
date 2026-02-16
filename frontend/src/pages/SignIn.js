@@ -24,7 +24,8 @@ const SignIn = () => {
     event.preventDefault();
 
     try {
-      const data = await fetch(`${process.env.REACT_APP_BACKEND_URL || "http://localhost:3001"}/api/v1/createuser`, {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
+      const data = await fetch(`${backendURL}/api/v1/createuser`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

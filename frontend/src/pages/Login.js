@@ -23,7 +23,8 @@ const Login = () => {
   async function handleSubmit(event) {
     event.preventDefault();
     try {
-      const data = await fetch(`${process.env.REACT_APP_BACKEND_URL || "http://localhost:3001"}/api/v1/login`, {
+      const backendURL = process.env.REACT_APP_BACKEND_URL || (window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
+      const data = await fetch(`${backendURL}/api/v1/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
