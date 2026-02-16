@@ -24,25 +24,17 @@ const SignIn = () => {
     event.preventDefault();
 
     try {
-      let backendURL = process.env.REACT_APP_BACKEND_URL;
-      
-      // If no backend URL is set, use relative path for production
-      if (!backendURL) {
-        backendURL = '';
-      }
-      
-      // Remove trailing slash if present
-      if (backendURL.endsWith('/')) {
-        backendURL = backendURL.slice(0, -1);
-      }
-      
+      // Use hardcoded backend URL for production
+      const backendURL = "https://crypto-tracker-3i4j.vercel.app";
       const apiUrl = `${backendURL}/api/v1/createuser`;
+      
       console.log('SignUp API URL:', apiUrl);
       
       const data = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
+        credentials: "include"
       });
 
       const response = await data.json();
