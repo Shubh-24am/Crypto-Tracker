@@ -18,10 +18,10 @@ app.use(
       if (/^http:\/\/192\.168\..*:3000$/.test(origin)) {
         return callback(null, true);
       }
-      if (origin.includes("vercel.app")) {
+      if (origin && origin.includes("vercel.app")) {
         return callback(null, true);
       }
-      if (origin.startsWith("https://")) {
+      if (origin && origin.startsWith("https://")) {
         return callback(null, true);
       }
       return callback(new Error("CORS not allowed"));
@@ -33,20 +33,36 @@ app.use(
 );
 
 app.use(express.json());
-connectDB();
-app.use("/api", routes);
+app.use(express.urlencoded({ extended: true }));
 
+// Connect to MongoDB
+connectDB();
+
+// Health check route
 app.get("/api/test", (req, res) => {
-  res.json({ message: "Backend is running and MongoDB connected" });
+  res.status(200).json({ message: "Backend is running and MongoDB connected" });
 });
 
 app.get("/", (req, res) => {
-  res.json({ status: "Server is running" });
+  res.status(200).json({ status: "Server is running" });
 });
 
+// API routes
+app.use("/api", routes);
+
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ status: false, message: err.message || "Internal server error" });
+  console.error("Error:", err);
+  res.status(500).json({ 
+    status: false, 
+    message: err.message || "Internal server error",
+    error: process.env.NODE_ENV === "production" ? undefined : err.stack
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ status: false, message: "Route not found" });
 });
 
 export default app;
