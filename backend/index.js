@@ -13,7 +13,9 @@ app.use(
       if (!origin) return callback(null, true);
       const isLocalhost = origin === "http://localhost:3000" || origin === "http://127.0.0.1:3000";
       const isLan = /^http:\/\/192\.168\..*:3000$/.test(origin);
-      if (isLocalhost || isLan) return callback(null, true);
+      const isVercel = origin && origin.includes("vercel.app");
+      const isProduction = origin && (origin.includes("https://") || isVercel);
+      if (isLocalhost || isLan || isProduction) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
