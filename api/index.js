@@ -8,39 +8,20 @@ dotenv.config();
 
 const app = express();
 
-// CORS middleware - MUST be first
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  // Allow specific origins
-  const allowedOrigins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-  ];
-  
-  // Allow all vercel.app domains
-  if (origin && origin.includes("vercel.app")) {
-    allowedOrigins.push(origin);
-  }
-  
-  // Allow HTTPS in production
-  if (origin && origin.startsWith("https://")) {
-    allowedOrigins.push(origin);
-  }
-  
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-  }
-  
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
+// CORS configuration - Allow all origins for Vercel deployment
+const corsOptions = {
+  origin: true, // Allow any origin
+  credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  optionsSuccessStatus: 200,
+  preflightContinue: false
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
